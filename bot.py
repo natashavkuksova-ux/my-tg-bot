@@ -12,8 +12,9 @@ from gigachat import GigaChat
 from gigachat.models import Chat, Function, FunctionParameters, Messages, MessagesRole
 import openpyxl
 
-TELEGRAM_TOKEN = "9000252271:AAG7SV3Z2KzBrA4KTlLTO_KsiZvCJfyztxg"
-GIGACHAT_CREDENTIALS = "MDFhMjE5OTEtNzFmYi03YjdjLWE4MDUtZGM4NmZjNmE5YWU5OmVhMDM0NWU1LWE3ZjMtNDdmMS05ZmY5LWQ2OGI4ZmVkYzBiMA=="
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+GIGACHAT_CREDENTIALS = os.getenv("GIGACHAT_CREDENTIALS")
+
 
 SYSTEM_PROMPT = (
     "Ты умный ИИ-ассистент в Telegram на базе российской нейросети GigaChat. "
