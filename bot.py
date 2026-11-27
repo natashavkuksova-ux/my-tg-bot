@@ -88,7 +88,7 @@ async def process_gigachat_request(
     history.append(Messages(role=MessagesRole.USER, content=user_text))
 
     if len(history) > 16:
-        history = [history] + history[-15:]
+        history = [history[0]] + history[-15:]
         user_histories[user_id] = history
 
     await bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
@@ -98,13 +98,14 @@ async def process_gigachat_request(
             credentials=GIGACHAT_CREDENTIALS,
             verify_ssl_certs=False,
         ) as giga:
-            # Автоматически узнаём список доступных моделей для вашего ключа
+            # Запрашиваем у Сбера точный список моделей, доступных вашему ключу
             models_resp = await giga.aget_models()
             available_models = [
                 m.id_ for m in models_resp.data if "Embed" not in m.id_
             ]
+            print("Доступные модели GigaChat:", available_models)
             chosen_model = (
-                available_models if available_models else "GigaChat-2"
+                available_models[0] if available_models else "GigaChat-2"
             )
 
             payload = Chat(
@@ -116,7 +117,7 @@ async def process_gigachat_request(
             )
             response = await giga.achat(payload)
 
-        msg = response.choices.message
+        msg = response.choices[0].message
 
         if msg.function_call and msg.function_call.name == "create_excel":
             args = msg.function_call.arguments
