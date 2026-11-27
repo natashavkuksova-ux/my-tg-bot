@@ -15,7 +15,6 @@ import openpyxl
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 GIGACHAT_CREDENTIALS = os.getenv("GIGACHAT_CREDENTIALS")
 
-
 SYSTEM_PROMPT = (
     "Ты умный ИИ-ассистент в Telegram на базе российской нейросети GigaChat. "
     "Отвечай на русском языке четко и по делу. Ты умеешь читать таблицы Excel "
@@ -89,7 +88,7 @@ async def process_gigachat_request(
     history.append(Messages(role=MessagesRole.USER, content=user_text))
 
     if len(history) > 16:
-        history = [history[0]] + history[-15:]
+        history = [history] + history[-15:]
         user_histories[user_id] = history
 
     await bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
@@ -98,9 +97,18 @@ async def process_gigachat_request(
         async with GigaChat(
             credentials=GIGACHAT_CREDENTIALS,
             verify_ssl_certs=False,
-            model="GigaChat-3-Ultra",
         ) as giga:
+            # Автоматически узнаём список доступных моделей для вашего ключа
+            models_resp = await giga.aget_models()
+            available_models = [
+                m.id_ for m in models_resp.data if "Embed" not in m.id_
+            ]
+            chosen_model = (
+                available_models if available_models else "GigaChat-2"
+            )
+
             payload = Chat(
+                model=chosen_model,
                 messages=history,
                 functions=[CREATE_EXCEL_FUNC],
                 function_call="auto",
@@ -108,7 +116,7 @@ async def process_gigachat_request(
             )
             response = await giga.achat(payload)
 
-        msg = response.choices[0].message
+        msg = response.choices.message
 
         if msg.function_call and msg.function_call.name == "create_excel":
             args = msg.function_call.arguments
