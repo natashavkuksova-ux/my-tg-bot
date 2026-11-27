@@ -98,7 +98,7 @@ async def process_gigachat_request(
         async with GigaChat(
             credentials=GIGACHAT_CREDENTIALS,
             verify_ssl_certs=False,
-            model="GigaChat",
+            model="GigaChat-3-Ultra",
         ) as giga:
             payload = Chat(
                 messages=history,
